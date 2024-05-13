@@ -1,0 +1,34 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+h1 {
+    color: #000000;
+    margin-bottom: 20px;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-top: 60px;
+}
+
+    .options-container .admin-button {
+        width: 60%;
+        padding: 15px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+    }
+
+        .options-container .admin-button:hover {
+            background-color: #0056b3;
+        }

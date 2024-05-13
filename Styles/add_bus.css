@@ -1,0 +1,91 @@
+﻿/* Body styles */
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('road-background.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+}
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Form container styles */
+#ticketForm {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Form field styles */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+    width: calc(100% - 12px); /* Adjust for padding */
+    padding: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Submit button styles */
+#btnSubmit {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    #btnSubmit:hover {
+        background-color: #0056b3;
+    }
+
+/* Error message styles */
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Admin portal link styles */
+.admin-portal-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+    .admin-portal-link a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+        .admin-portal-link a:hover {
+            text-decoration: underline;
+        }
+
+.drop-down-control {
+    width: calc(100% - 12px);
+    padding: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
