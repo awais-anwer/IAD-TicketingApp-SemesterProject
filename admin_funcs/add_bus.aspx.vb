@@ -30,6 +30,7 @@ Partial Class add_bus
                 End Using
 
                 ' Insertion successful, 
+                lblErrorMessage.Visible = False
                 ClientScript.RegisterStartupScript(Me.GetType(), "alert", "alert('Bus added successfully.');", True)
             Catch ex As Exception
                 ' Error occurred while inserting data

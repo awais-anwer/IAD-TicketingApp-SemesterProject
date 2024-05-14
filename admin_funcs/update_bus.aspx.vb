@@ -16,56 +16,18 @@ Partial Class update_bus
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Load
         If Not IsPostBack Then
-            Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
-
-            If Not IsPostBack Then
-                Try
-                    Using connection As New SqlConnection(connectionString)
-                        connection.Open()
-
-                        ' Add default "Choose Departure Location" option
-                        departureLocation.Items.Add(New ListItem("Departure Location", ""))
-
-                        ' Populate Departure Location dropdown
-                        Dim departureQuery As String = "SELECT DISTINCT Departure_location FROM Bus"
-                        Using departureCommand As New SqlCommand(departureQuery, connection)
-                            Using reader As SqlDataReader = departureCommand.ExecuteReader()
-                                While reader.Read()
-                                    departureLocation.Items.Add(New ListItem(reader("Departure_location").ToString(), reader("Departure_location").ToString()))
-                                End While
-                            End Using
-                        End Using
-
-                        ' Add default "Choose Arrival Location" option
-                        arrivalLocation.Items.Add(New ListItem("Arrival Location", ""))
-
-                        ' Populate Arrival Location dropdown
-                        Dim arrivalQuery As String = "SELECT DISTINCT Arrival_location FROM Bus"
-                        Using arrivalCommand As New SqlCommand(arrivalQuery, connection)
-                            Using reader As SqlDataReader = arrivalCommand.ExecuteReader()
-                                While reader.Read()
-                                    arrivalLocation.Items.Add(New ListItem(reader("Arrival_location").ToString(), reader("Arrival_location").ToString()))
-                                End While
-                            End Using
-                        End Using
-                    End Using
-                Catch ex As Exception
-                    ' Handle any exceptions that occur during the database operation
-                    lblErrorMessage.Text = "An error occurred while populating dropdown lists: " & ex.Message
-                    lblErrorMessage.Visible = True
-                End Try
-            End If
-
-
+            PopulateDropdownLists()
         End If
     End Sub
     Protected Sub btnSubmit_Click(sender As Object, e As EventArgs) Handles btnSubmit.Click
         'If Session("islogin") Then
 
-        Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
-        Dim busList As New List(Of Bus)()
+        If validateInputs() Then
+            Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
 
-        Dim query As String = "SELECT Bus_number, CONVERT(varchar, Date_time, 106) AS Date, CONVERT(varchar, Date_time, 108) AS Time, Departure_location, Arrival_location, Seat_price FROM Bus WHERE Departure_location = @DepartureLocation AND Arrival_location = @ArrivalLocation AND CONVERT(date, Date_time) = @Date"
+            Dim busList As New List(Of Bus)()
+
+            Dim query As String = "SELECT Bus_number, CONVERT(varchar, Date_time, 106) AS Date, CONVERT(varchar, Date_time, 108) AS Time, Departure_location, Arrival_location, Seat_price FROM Bus WHERE Departure_location = @DepartureLocation AND Arrival_location = @ArrivalLocation AND CONVERT(date, Date_time) = @Date"
 
             Try
                 Using connection As New SqlConnection(connectionString)
@@ -93,10 +55,12 @@ Partial Class update_bus
 
                 ' Bind the list of buses to the HTML table
                 BindBusList(busList)
+                lblErrorMessage.Visible = False
             Catch ex As Exception
-                lblErrorMessage.Text = "An error occurred while processing your request. Please try again later." & ex.Message
+                lblErrorMessage.Text = "Something went wrong. Please try again later."
                 lblErrorMessage.Visible = True
             End Try
+        End If
 
         'Else
         '    Response.Redirect("login.aspx")
@@ -154,5 +118,74 @@ Partial Class update_bus
         End If
     End Sub
 
+    Private Sub PopulateDropdownLists()
+        Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
+
+        Try
+            Using connection As New SqlConnection(ConnectionString)
+                connection.Open()
+
+                ' Add default "Choose Departure Location" option
+                departureLocation.Items.Add(New ListItem("Departure Location", ""))
+
+                ' Populate Departure Location dropdown
+                Dim departureQuery As String = "SELECT DISTINCT Departure_location FROM Bus"
+                Using departureCommand As New SqlCommand(departureQuery, connection)
+                    Using reader As SqlDataReader = departureCommand.ExecuteReader()
+                        While reader.Read()
+                            departureLocation.Items.Add(New ListItem(reader("Departure_location").ToString(), reader("Departure_location").ToString()))
+                        End While
+                    End Using
+                End Using
+
+                ' Add default "Choose Arrival Location" option
+                arrivalLocation.Items.Add(New ListItem("Arrival Location", ""))
+
+                ' Populate Arrival Location dropdown
+                Dim arrivalQuery As String = "SELECT DISTINCT Arrival_location FROM Bus"
+                Using arrivalCommand As New SqlCommand(arrivalQuery, connection)
+                    Using reader As SqlDataReader = arrivalCommand.ExecuteReader()
+                        While reader.Read()
+                            arrivalLocation.Items.Add(New ListItem(reader("Arrival_location").ToString(), reader("Arrival_location").ToString()))
+                        End While
+                    End Using
+                End Using
+            End Using
+
+            lblErrorMessage.Visible = False
+        Catch ex As Exception
+            ' Handle any exceptions that occur during the database operation
+            lblErrorMessage.Text = "An error occurred while Connecting to the database."
+            lblErrorMessage.Visible = True
+        End Try
+
+    End Sub
+
+    Private Function validateInputs() As Boolean
+        ' Check if departure location is selected
+        If departureLocation.SelectedValue = "" Then
+            lblErrorMessage.Text = "Please select a departure location."
+            lblErrorMessage.Visible = True
+            Return False
+        End If
+
+        ' Check if arrival location is selected
+        If arrivalLocation.SelectedValue = "" Then
+            lblErrorMessage.Text = "Please select an arrival location."
+            lblErrorMessage.Visible = True
+            Return False
+        End If
+
+        ' Check if date is selected
+        If dateInput.Text = "" Then
+            lblErrorMessage.Text = "Please select a date."
+            lblErrorMessage.Visible = True
+            Return False
+        End If
+
+        ' If all inputs are valid, hide error message
+        lblErrorMessage.Visible = False
+        Return True
+    End Function
 
 End Class

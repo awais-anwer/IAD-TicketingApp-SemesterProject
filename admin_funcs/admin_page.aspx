@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Admin Portal</title>
-    <link href="../styles/admin_page.css" rel="stylesheet" />
+    <link href="../Styles/admin_page.css" rel="stylesheet" />
 </head>
 <body>
     <h1>Welcome to Admin Portal</h1>

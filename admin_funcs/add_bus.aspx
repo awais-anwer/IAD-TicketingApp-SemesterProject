@@ -9,7 +9,7 @@
 </head>
 <body>
     <form id="ticketForm" runat="server">
-         <h1>Add Buss</h1>
+         <h2>Add Buss</h2>
         <div>
             <label for="busNumber">Bus Number:</label>
             <asp:TextBox ID="busNumber" runat="server"></asp:TextBox>

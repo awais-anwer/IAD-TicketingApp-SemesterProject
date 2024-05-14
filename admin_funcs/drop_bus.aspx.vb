@@ -13,74 +13,36 @@ End Class
 Partial Class drop_bus
     Inherits System.Web.UI.Page
 
+
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Load
-        'If Session("islogin") Then
+        'If Session("adminLogedin") Then
+
         If Not IsPostBack Then
-
-            Dim queryString As String = Request.QueryString("BusNumber")
-            If Not String.IsNullOrEmpty(queryString) Then
-                ' Extract the bus number from the query string
-                Dim busNumber As String = queryString
-
-                ' Connect to the database and delete the bus
-                Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
-
-                Dim query As String = "DELETE FROM Bus WHERE Bus_number = @BusNumber"
-
-                Try
-                    Using connection As New SqlConnection(ConnectionString)
-                        connection.Open()
-
-                        Using command As New SqlCommand(query, connection)
-                            command.Parameters.AddWithValue("@BusNumber", busNumber)
-                            command.ExecuteNonQuery()
-                        End Using
-                    End Using
-
-                    ' Remove the deleted bus from the session
-                    Dim busList As List(Of bus_to_drop) = CType(Session("BusList"), List(Of bus_to_drop))
-                    If busList IsNot Nothing Then
-                        Dim busToRemove As bus_to_drop = busList.FirstOrDefault(Function(bus) bus.BusNumber = busNumber)
-                        If busToRemove IsNot Nothing Then
-                            busList.Remove(busToRemove)
-                        End If
-                    End If
-
-                    ' Show a success message
-                    ClientScript.RegisterStartupScript(Me.GetType(), "alert", "alert('Bus deleted successfully');", True)
-                    If busList.Count > 0 Then
-                        BindBusList(busList)
-                        ' Re-bind the table
-                    End If
-                Catch ex As Exception
-                    ' Handle any exceptions that occur during the database operation
-                    lblErrorMessage.Text = "An error occurred while deleting the bus: " & ex.Message
-                    lblErrorMessage.Visible = True
-                End Try
-            End If
-
+            PopulateDropdownLists()
+            DeleteBus()
         End If
-        'Else
-        '    Response.Redirect("login.aspx")
-        'End If
+
     End Sub
 
     Protected Sub btnSubmit_Click(sender As Object, e As EventArgs) Handles btnSubmit.Click
         'If Session("islogin") Then
+
         Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
-        Dim busList As New List(Of bus_to_drop)()
 
-        Dim query As String = "SELECT Bus_number, CONVERT(varchar, Date_time, 106) AS Date, CONVERT(varchar, Date_time, 108) AS Time, Departure_location, Arrival_location, Seat_price FROM Bus WHERE Departure_location = @DepartureLocation AND Arrival_location = @ArrivalLocation"
+        If validateInputs() Then
+            Dim busList As New List(Of bus_to_drop)()
 
-        Try
+            Dim query As String = "SELECT Bus_number, CONVERT(varchar, Date_time, 106) AS Date, CONVERT(varchar, Date_time, 108) AS Time, Departure_location, Arrival_location, Seat_price FROM Bus WHERE Departure_location = @DepartureLocation AND Arrival_location = @ArrivalLocation"
+
+            Try
                 Using connection As New SqlConnection(connectionString)
                     connection.Open()
 
                     Using command As New SqlCommand(query, connection)
                         command.Parameters.AddWithValue("@DepartureLocation", departureLocation.Text)
-                    command.Parameters.AddWithValue("@ArrivalLocation", arrivalLocation.Text)
+                        command.Parameters.AddWithValue("@ArrivalLocation", arrivalLocation.Text)
 
-                    Using reader As SqlDataReader = command.ExecuteReader()
+                        Using reader As SqlDataReader = command.ExecuteReader()
                             While reader.Read()
                                 Dim bus As New bus_to_drop()
                                 bus.BusNumber = reader("Bus_number").ToString()
@@ -96,18 +58,15 @@ Partial Class drop_bus
                 End Using
 
                 Session("BusList") = busList
-                departureLocation.Text = ""
-            arrivalLocation.Text = ""
 
-            ' Bind the list of buses to the HTML table
-            BindBusList(busList)
+                ' Bind the list of buses to the HTML table
+                BindBusList(busList)
             Catch ex As Exception
-                lblErrorMessage.Text = "An error occurred while processing your request. Please try again later." & ex.Message
+                lblErrorMessage.Text = "An error occurred while processing your request. Please try again later." &
                 lblErrorMessage.Visible = True
             End Try
-        'Else
-        '    Response.Redirect("login.aspx")
-        '    End If
+        End If
+
     End Sub
 
     Private Sub BindBusList(busList As List(Of bus_to_drop))
@@ -138,7 +97,7 @@ Partial Class drop_bus
                 row.Cells.Add(cellArrivalLocation)
 
                 ' Create a new anchor tag
-                Dim queryString As String = "BusNumber=" & bus.BusNumber & "&Date=" & bus.busDate & "&Time=" & bus.Time & "&DepartureLocation=" & bus.DepartureLocation & "&ArrivalLocation=" & bus.ArrivalLocation & "&SeatPrice=" & bus.Price
+                Dim queryString As String = "BusNumber=" & bus.BusNumber
 
                 ' Create a new anchor tag
                 Dim DropLink As New HtmlAnchor()
@@ -155,12 +114,119 @@ Partial Class drop_bus
 
                 busTable.Rows.Add(row)
             Next
-
+            lblErrorMessage.Visible = False
         Else
             lblErrorMessage.Text = "No buses found for the given criteria."
             lblErrorMessage.Visible = True
         End If
     End Sub
 
+    ' Subroutine to populate the dropdown list for departure and arrival location.
+    Private Sub PopulateDropdownLists()
+        Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
+
+        Try
+            Using connection As New SqlConnection(ConnectionString)
+                connection.Open()
+
+                ' Add default "Choose Departure Location" option
+                departureLocation.Items.Add(New ListItem("Departure Location", ""))
+
+                ' Populate Departure Location dropdown
+                Dim departureQuery As String = "SELECT DISTINCT Departure_location FROM Bus"
+                Using departureCommand As New SqlCommand(departureQuery, connection)
+                    Using reader As SqlDataReader = departureCommand.ExecuteReader()
+                        While reader.Read()
+                            departureLocation.Items.Add(New ListItem(reader("Departure_location").ToString(), reader("Departure_location").ToString()))
+                        End While
+                    End Using
+                End Using
+
+                ' Add default "Choose Arrival Location" option
+                arrivalLocation.Items.Add(New ListItem("Arrival Location", ""))
+
+                ' Populate Arrival Location dropdown
+                Dim arrivalQuery As String = "SELECT DISTINCT Arrival_location FROM Bus"
+                Using arrivalCommand As New SqlCommand(arrivalQuery, connection)
+                    Using reader As SqlDataReader = arrivalCommand.ExecuteReader()
+                        While reader.Read()
+                            arrivalLocation.Items.Add(New ListItem(reader("Arrival_location").ToString(), reader("Arrival_location").ToString()))
+                        End While
+                    End Using
+                End Using
+            End Using
+
+            lblErrorMessage.Visible = False
+        Catch ex As Exception
+            ' Handle any exceptions that occur during the database operation
+            lblErrorMessage.Text = "An error occurred while connecting to the database. Please try again."
+            lblErrorMessage.Visible = True
+        End Try
+    End Sub
+
+    ' Subroutine to Selete the bus if some bus number is passes in query string
+    Private Sub DeleteBus()
+        Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
+
+        Dim queryString As String = Request.QueryString("BusNumber")
+        If Not String.IsNullOrEmpty(queryString) Then
+            ' Extract the bus number from the query string
+            Dim busNumber As String = queryString
+
+            ' Connect to the database and delete the bus
+            Dim query As String = "DELETE FROM Bus WHERE Bus_number = @BusNumber"
+
+            Try
+                Using connection As New SqlConnection(ConnectionString)
+                    connection.Open()
+                    Using command As New SqlCommand(query, connection)
+                        command.Parameters.AddWithValue("@BusNumber", busNumber)
+                        command.ExecuteNonQuery()
+                    End Using
+                End Using
+
+                ' Remove the deleted bus from the session
+                Dim busList As List(Of bus_to_drop) = CType(Session("BusList"), List(Of bus_to_drop))
+                If busList IsNot Nothing Then
+                    Dim busToRemove As bus_to_drop = busList.FirstOrDefault(Function(bus) bus.BusNumber = busNumber)
+                    If busToRemove IsNot Nothing Then
+                        busList.Remove(busToRemove)
+                    End If
+                End If
+
+                ' Show a success message
+                lblErrorMessage.Visible = False
+                ClientScript.RegisterStartupScript(Me.GetType(), "alert", "alert('Bus deleted successfully');", True)
+                If busList.Count > 0 Then
+                    ' Re-bind the table
+                    BindBusList(busList)
+                End If
+            Catch ex As Exception
+                ' Handle any exceptions that occur during the database operation
+                lblErrorMessage.Text = "An error occurred while deleting the bus."
+                lblErrorMessage.Visible = True
+            End Try
+        End If
+    End Sub
+
+    Private Function validateInputs() As Boolean
+        ' Check if departure location is selected
+        If departureLocation.SelectedValue = "" Then
+            lblErrorMessage.Text = "Please select a departure location."
+            lblErrorMessage.Visible = True
+            Return False
+        End If
+
+        ' Check if arrival location is selected
+        If arrivalLocation.SelectedValue = "" Then
+            lblErrorMessage.Text = "Please select an arrival location."
+            lblErrorMessage.Visible = True
+            Return False
+        End If
+
+        ' If all inputs are valid, hide error message
+        lblErrorMessage.Visible = False
+        Return True
+    End Function
 
 End Class

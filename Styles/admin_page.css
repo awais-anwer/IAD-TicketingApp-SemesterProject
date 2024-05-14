@@ -3,6 +3,10 @@
     padding: 20px;
     box-sizing: border-box;
     text-align: center;
+    background-image: url('bus-background.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 h1 {

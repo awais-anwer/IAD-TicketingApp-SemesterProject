@@ -8,10 +8,7 @@ body {
     margin: 0;
     padding: 0;
 }
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
-}
+
 
 /* Form container styles */
 #ticketForm {
@@ -21,6 +18,12 @@ h1 {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* H2 styles */
+h2 {
+    margin-bottom: 15px;
+    text-align: center; /* Center align H2 */
 }
 
 /* Form field styles */

@@ -4,49 +4,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
 <title>Search Bus</title>
-<style>
-        /* CSS styles */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 80%;
-            margin: 50px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .bus-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .bus-table th, .bus-table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-    </style>
+<link href="../Styles/drop_bus.css" rel="stylesheet" />
 </head>
 <body>
     <form id="ticketForm" runat="server">
         <div class="container">
-           <div>
+            <h2>Search a Bus</h2>
+            <div class="select-container">
                 <label for="departureLocation">Departure Location:</label>
-              
                 <asp:DropDownList  ID="departureLocation" runat="server"></asp:DropDownList>
             </div>
-            <div>
+            <div class="select-container">
                 <label for="arrivalLocation">Arrival Location:</label>
                  <asp:DropDownList  ID="arrivalLocation" runat="server"></asp:DropDownList >
             </div>
             <div>
-                <label for="dateInput">Date:</label>
-                <asp:TextBox ID="dateInput" runat="server" type="date"></asp:TextBox>
+            <label for="dateInput">Date:</label>
+            <asp:TextBox ID="dateInput" runat="server" type="date"></asp:TextBox>
             </div>
             <asp:Button ID="btnSubmit" runat="server" Text="Search" CssClass="btn" />
             <asp:Label ID="lblErrorMessage" runat="server" CssClass="error-message" Visible="False"></asp:Label>

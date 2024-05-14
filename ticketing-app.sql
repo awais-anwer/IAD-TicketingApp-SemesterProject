@@ -27,6 +27,7 @@ CREATE TABLE Seat_t (
     CONSTRAINT Seat_Credentials_PK PRIMARY KEY (Seat_no, Bus_number),
     CONSTRAINT Seat_Credentials_FK_1 FOREIGN KEY (Passenger_email) REFERENCES App_User(Email),
     CONSTRAINT Seat_Credentials_FK_2 FOREIGN KEY (Bus_number) REFERENCES Bus(Bus_number)
+    ON DELETE CASCADE
 );
 
 --trigger for inserts in seat table after insert in BUS
