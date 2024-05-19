@@ -9,13 +9,14 @@ CREATE TABLE App_User (
 INSERT INTO App_User (name, email, password, User_type) VALUES ('admin', 'admin@gmail.com', '1234', 'admin');
 
 CREATE TABLE Bus (
+    Bus_id INT IDENTITY(1,1),
     Bus_number VARCHAR(10) NOT NULL,
     Arrival_location VARCHAR(70) NOT NULL,
     Departure_location VARCHAR(70) NOT NULL,
     Date_time DATETIME,
     Seat_price INT NOT NULL,
     Total_seats INT NOT NULL
-    CONSTRAINT Bus_Credentials_PK PRIMARY KEY (Bus_number)
+    CONSTRAINT Bus_Credentials_PK PRIMARY KEY (Bus_id)
 );
 
 CREATE TABLE Seat_t (
@@ -23,10 +24,10 @@ CREATE TABLE Seat_t (
     isBooked BIT NOT NULL DEFAULT 0, 
     Booking_time DATETIME,
     Passenger_email VARCHAR(100),
-    Bus_number VARCHAR(10) NOT NULL,
-    CONSTRAINT Seat_Credentials_PK PRIMARY KEY (Seat_no, Bus_number),
+    Bus_id INT NOT NULL,
+    CONSTRAINT Seat_Credentials_PK PRIMARY KEY (Seat_no, Bus_id),
     CONSTRAINT Seat_Credentials_FK_1 FOREIGN KEY (Passenger_email) REFERENCES App_User(Email),
-    CONSTRAINT Seat_Credentials_FK_2 FOREIGN KEY (Bus_number) REFERENCES Bus(Bus_number)
+    CONSTRAINT Seat_Credentials_FK_2 FOREIGN KEY (Bus_id) REFERENCES Bus(Bus_id)
     ON DELETE CASCADE
 );
 

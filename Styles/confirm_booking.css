@@ -1,0 +1,72 @@
+﻿/* CSS */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('road-background.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+}
+
+#bookingSummary {
+    margin-bottom: 20px;
+    display: inline-block; /* Added to make bookingSummary inline with seatTickets */
+}
+
+.label {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.seat-ticket {
+    background-color: #e9ecef;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    display: inline-block; /* Added to make seat tickets display inline */
+    vertical-align: top; /* Added to align seat tickets vertically */
+}
+
+    .seat-ticket span {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+.btn-confirm {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+    .btn-confirm:hover {
+        background-color: #0056b3;
+    }
+
+#lblerrormessage {
+    color: red;
+    font-weight: bold;
+    margin-top: 20px;
+}

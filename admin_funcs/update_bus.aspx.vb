@@ -54,8 +54,8 @@ Partial Class update_bus
                 End Using
 
                 ' Bind the list of buses to the HTML table
-                BindBusList(busList)
                 lblErrorMessage.Visible = False
+                BindBusList(busList)
             Catch ex As Exception
                 lblErrorMessage.Text = "Something went wrong. Please try again later."
                 lblErrorMessage.Visible = True
