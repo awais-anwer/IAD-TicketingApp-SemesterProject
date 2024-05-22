@@ -1,6 +1,4 @@
 ﻿Imports System.Data.SqlClient
-Imports System.Web.UI.HtmlControls
-
 Public Class Bus
     Public Property BusNumber As String
     Public Property busDate As String
@@ -8,29 +6,30 @@ Public Class Bus
     Public Property DepartureLocation As String
     Public Property ArrivalLocation As String
     Public Property Price As Int64
+    Public Property BusId As String
 End Class
-
-
 Partial Class update_bus
     Inherits System.Web.UI.Page
 
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Load
+        If Session("adminLoggedIn") Is Nothing OrElse CBool(Session("adminLoggedIn")) = False Then
+            Response.Redirect("../login_page.aspx")
+        End If
+
         If Not IsPostBack Then
             PopulateDropdownLists()
         End If
     End Sub
     Protected Sub btnSubmit_Click(sender As Object, e As EventArgs) Handles btnSubmit.Click
-        'If Session("islogin") Then
-
         If validateInputs() Then
             Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
 
             Dim busList As New List(Of Bus)()
 
-            Dim query As String = "SELECT Bus_number, CONVERT(varchar, Date_time, 106) AS Date, CONVERT(varchar, Date_time, 108) AS Time, Departure_location, Arrival_location, Seat_price FROM Bus WHERE Departure_location = @DepartureLocation AND Arrival_location = @ArrivalLocation AND CONVERT(date, Date_time) = @Date"
+            Dim query As String = "SELECT Bus_Id,Bus_number, CONVERT(varchar, Date_time, 106) AS Date, CONVERT(varchar, Date_time, 108) AS Time, Departure_location, Arrival_location, Seat_price FROM Bus WHERE Departure_location = @DepartureLocation AND Arrival_location = @ArrivalLocation AND CONVERT(date, Date_time) = @Date"
 
             Try
-                Using connection As New SqlConnection(connectionString)
+                Using connection As New SqlConnection(ConnectionString)
                     connection.Open()
 
                     Using command As New SqlCommand(query, connection)
@@ -42,6 +41,7 @@ Partial Class update_bus
                             While reader.Read()
                                 Dim bus As New Bus()
                                 bus.BusNumber = reader("Bus_number").ToString()
+                                bus.BusId = reader("Bus_id").ToString()
                                 bus.busDate = reader("Date").ToString()
                                 bus.Time = reader("Time").ToString()
                                 bus.DepartureLocation = reader("Departure_location").ToString()
@@ -52,8 +52,6 @@ Partial Class update_bus
                         End Using
                     End Using
                 End Using
-
-                ' Bind the list of buses to the HTML table
                 lblErrorMessage.Visible = False
                 BindBusList(busList)
             Catch ex As Exception
@@ -62,9 +60,6 @@ Partial Class update_bus
             End Try
         End If
 
-        'Else
-        '    Response.Redirect("login.aspx")
-        'End If
     End Sub
 
     Private Sub BindBusList(busList As List(Of Bus))
@@ -94,20 +89,15 @@ Partial Class update_bus
                 cellArrivalLocation.InnerText = bus.ArrivalLocation
                 row.Cells.Add(cellArrivalLocation)
 
-                ' Create the query string with multiple parameters
-                Dim queryString As String = "BusNumber=" & bus.BusNumber & "&Date=" & bus.busDate & "&Time=" & bus.Time & "&DepartureLocation=" & bus.DepartureLocation & "&ArrivalLocation=" & bus.ArrivalLocation & "&SeatPrice=" & bus.Price
+                Dim queryString As String = "BusId=" & bus.BusId & "&BusNumber=" & bus.BusNumber & "&Date=" & bus.busDate & "&Time=" & bus.Time & "&DepartureLocation=" & bus.DepartureLocation & "&ArrivalLocation=" & bus.ArrivalLocation & "&SeatPrice=" & bus.Price
 
-                ' Create a new anchor tag
                 Dim updateLink As New HtmlAnchor()
                 updateLink.InnerText = "Update"
                 updateLink.HRef = "update_singleBus.aspx?" & queryString
                 updateLink.Attributes("class") = "btn btn-primary"
 
-                ' Create a new cell to contain the anchor tag
                 Dim cellUpdateLink As New HtmlTableCell()
                 cellUpdateLink.Controls.Add(updateLink)
-
-                ' Add the cell to the row
                 row.Cells.Add(cellUpdateLink)
 
                 busTable.Rows.Add(row)
@@ -125,10 +115,8 @@ Partial Class update_bus
             Using connection As New SqlConnection(ConnectionString)
                 connection.Open()
 
-                ' Add default "Choose Departure Location" option
                 departureLocation.Items.Add(New ListItem("Departure Location", ""))
 
-                ' Populate Departure Location dropdown
                 Dim departureQuery As String = "SELECT DISTINCT Departure_location FROM Bus"
                 Using departureCommand As New SqlCommand(departureQuery, connection)
                     Using reader As SqlDataReader = departureCommand.ExecuteReader()
@@ -138,10 +126,8 @@ Partial Class update_bus
                     End Using
                 End Using
 
-                ' Add default "Choose Arrival Location" option
                 arrivalLocation.Items.Add(New ListItem("Arrival Location", ""))
 
-                ' Populate Arrival Location dropdown
                 Dim arrivalQuery As String = "SELECT DISTINCT Arrival_location FROM Bus"
                 Using arrivalCommand As New SqlCommand(arrivalQuery, connection)
                     Using reader As SqlDataReader = arrivalCommand.ExecuteReader()
@@ -154,7 +140,6 @@ Partial Class update_bus
 
             lblErrorMessage.Visible = False
         Catch ex As Exception
-            ' Handle any exceptions that occur during the database operation
             lblErrorMessage.Text = "An error occurred while Connecting to the database."
             lblErrorMessage.Visible = True
         End Try
@@ -162,28 +147,24 @@ Partial Class update_bus
     End Sub
 
     Private Function validateInputs() As Boolean
-        ' Check if departure location is selected
         If departureLocation.SelectedValue = "" Then
             lblErrorMessage.Text = "Please select a departure location."
             lblErrorMessage.Visible = True
             Return False
         End If
 
-        ' Check if arrival location is selected
         If arrivalLocation.SelectedValue = "" Then
             lblErrorMessage.Text = "Please select an arrival location."
             lblErrorMessage.Visible = True
             Return False
         End If
 
-        ' Check if date is selected
         If dateInput.Text = "" Then
             lblErrorMessage.Text = "Please select a date."
             lblErrorMessage.Visible = True
             Return False
         End If
 
-        ' If all inputs are valid, hide error message
         lblErrorMessage.Visible = False
         Return True
     End Function

@@ -12,7 +12,7 @@
      <div class="navbar">
         <a href="book_seat.aspx">Book Seats</a>
         <a href="ShowTickets.aspx">See Tickets</a>
-        <a href="javascript:void(0);" class="right" onclick="logout()">Logout</a>
+        <a href="../Default.aspx" class="right">Logout</a>
     </div>
     <form id="form1" runat="server">
         <div class="container">

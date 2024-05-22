@@ -1,12 +1,15 @@
 ﻿Imports System.Data.SqlClient
 Partial Class User_func_ShowTickets
     Inherits System.Web.UI.Page
+    Dim connectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
+
     Protected Sub Page_Load(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Load
 
+        If Session("passengerLoggedIn") Is Nothing OrElse CBool(Session("passengerLoggedIn")) = False Then
+            Response.Redirect("../login_page.aspx")
+        End If
 
-        Dim passenger_email As String = "gmustafa@gmail.com"
-
-        ' Assuming you have a function to retrieve the seats based on the passenger's email
+        Dim passenger_email As String = Session("passengerEmail").ToString()
         Dim seats As List(Of Seat) = GetSeatsForPassenger(passenger_email)
 
         If seats.Count > 0 Then
@@ -20,48 +23,57 @@ Partial Class User_func_ShowTickets
 
     End Sub
 
-    ' Sample class to represent a seat
     Public Class Seat
         Public Property SeatId As Integer
         Public Property PassengerEmail As String
         Public Property BookingTime As DateTime
         Public Property BusNumber As String
-    End Class
+        Public Property BusId As String
 
-    ' Sample function to retrieve seats for a passenger (replace with your actual logic)
+        Public Property SeatPrice As String
+        Public Property DepartureLocation As String
+        Public Property ArrivalLocation As String
+        Public Property DepartureTime As DateTime
+
+    End Class
 
     Private Function GetSeatsForPassenger(ByVal passenger_email As String) As List(Of Seat)
         Dim seats As New List(Of Seat)()
+        Dim currentDateTime As DateTime = DateTime.Now
+        Dim formattedDateTime As String = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss")
 
-
-        ' Replace the connection string with your actual database connection string
-        Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
-
-        ' Query to retrieve seat information for the given passenger email
-        Dim query As String = "SELECT Seat_no,passenger_email , Booking_time, bus_number FROM seat_t WHERE passenger_email = @PassengerEmail"
+        Dim seatQuery As String = "SELECT s.Seat_no, s.passenger_email, s.Booking_time, s.bus_id, b.bus_number, b.seat_price, b.departure_location, b.arrival_location, b.Date_time " &
+                              "FROM seat_t s " &
+                              "INNER JOIN bus b ON s.bus_id = b.bus_id " &
+                              "WHERE s.passenger_email = @PassengerEmail AND b.date_time > @formattedDateTime"
 
         Using connection As New SqlConnection(connectionString)
-            Using command As New SqlCommand(query, connection)
+            Using command As New SqlCommand(seatQuery, connection)
                 command.Parameters.AddWithValue("@PassengerEmail", passenger_email)
+                command.Parameters.AddWithValue("@formattedDateTime", formattedDateTime)
                 connection.Open()
-                Dim reader As SqlDataReader = command.ExecuteReader()
-                While reader.Read()
-                    Dim seat As New Seat()
-                    seat.SeatId = reader.GetInt32(0)
-                    seat.PassengerEmail = reader.GetString(1)
-                    seat.BookingTime = reader.GetDateTime(2)
-                    seat.BusNumber = reader.GetString(3)
-                    seats.Add(seat)
-                End While
+
+                Using reader As SqlDataReader = command.ExecuteReader()
+                    While reader.Read()
+                        Dim seat As New Seat()
+                        seat.SeatId = reader.GetInt32(0)
+                        seat.PassengerEmail = reader.GetString(1)
+                        seat.BookingTime = reader.GetDateTime(2)
+                        seat.BusId = reader.GetInt32(3)
+                        seat.BusNumber = reader.GetString(4)
+                        seat.SeatPrice = reader.GetInt32(5)
+                        seat.DepartureLocation = reader.GetString(6)
+                        seat.ArrivalLocation = reader.GetString(7)
+                        seat.DepartureTime = reader.GetDateTime(8)
+                        seats.Add(seat)
+                    End While
+                End Using
             End Using
         End Using
 
         Return seats
     End Function
 
-
-    ' Sample function to format the ticket display (replace with your actual logic)
-    ' Sample function to format the ticket display (replace with your actual logic)
     Private Sub FormatTicket(ByVal seat As Seat)
         Dim seatTicket As New Panel()
         seatTicket.CssClass = "ticket"
@@ -82,48 +94,32 @@ Partial Class User_func_ShowTickets
         busNumber.Text = "<span>Bus Number: " & seat.BusNumber & "</span>"
         seatTicket.Controls.Add(busNumber)
 
-        ' Retrieve additional information based on busNumber
-        Dim additionalInfo As String = GetAdditionalInfo(seat.BusNumber)
-        seatTicket.Controls.Add(New LiteralControl(additionalInfo))
+        Dim seatPrice As New Label()
+        seatPrice.Text = "<span>Seat Price: " & seat.SeatPrice.ToString() & "</span>"
+        seatTicket.Controls.Add(seatPrice)
+
+        Dim departureLocation As New Label()
+        departureLocation.Text = "<span>Departure Location: " & seat.DepartureLocation & "</span>"
+        seatTicket.Controls.Add(departureLocation)
+
+        Dim arrivalLocation As New Label()
+        arrivalLocation.Text = "<span>Arrival Location: " & seat.ArrivalLocation & "</span>"
+        seatTicket.Controls.Add(arrivalLocation)
+
+        Dim departureTime As New Label()
+        departureTime.Text = "<span>Departure Time: " & seat.DepartureTime.ToString() & "</span>"
+        seatTicket.Controls.Add(departureTime)
+
+        Dim cancelBookingLink As New HtmlAnchor()
+        cancelBookingLink.InnerText = "Cancel Booking"
+        cancelBookingLink.HRef = "cancel_booking.aspx?bus_id=" & seat.BusId & "&" & "seat_no=" & seat.SeatId
+        cancelBookingLink.Attributes("class") = "cancel-booking-link"
+        seatTicket.Controls.Add(cancelBookingLink)
 
         Dim ticketsContainer As Control = form1.FindControl("ticketsContainer")
         ticketsContainer.Controls.Add(seatTicket)
 
-        ' Add a horizontal rule after each ticket
         ticketsContainer.Controls.Add(New LiteralControl("<hr />"))
     End Sub
-
-
-
-    Private Function GetAdditionalInfo(ByVal busNumber As String) As String
-        Dim additionalInfo As New StringBuilder()
-
-        ' Replace the connection string with your actual database connection string
-        Dim connectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
-
-        ' Query to retrieve seat price, departure location, and arrival location based on busNumber
-        Dim query As String = "SELECT seat_price, departure_location, arrival_location FROM bus WHERE bus_number = @BusNumber"
-
-        Using connection As New SqlConnection(connectionString)
-            Using command As New SqlCommand(query, connection)
-                command.Parameters.AddWithValue("@BusNumber", busNumber)
-                connection.Open()
-                Dim reader As SqlDataReader = command.ExecuteReader()
-                If reader.Read() Then
-                    Dim seatPrice As Int32 = reader("seat_price")
-
-                    Dim departureLocation As String = reader.GetString(1)
-                    Dim arrivalLocation As String = reader.GetString(2)
-
-                    additionalInfo.Append("<br />Seat Price: " & seatPrice.ToString())
-                    additionalInfo.Append("<br />Departure Location: " & departureLocation)
-                    additionalInfo.Append("<br />Arrival Location: " & arrivalLocation)
-                End If
-            End Using
-        End Using
-
-        Return additionalInfo.ToString()
-    End Function
-
 
 End Class

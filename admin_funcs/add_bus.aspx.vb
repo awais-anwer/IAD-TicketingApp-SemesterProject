@@ -2,9 +2,14 @@
 Partial Class add_bus
     Inherits System.Web.UI.Page
     Private Sub add_bus_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Session("adminLoggedIn") Is Nothing OrElse CBool(Session("adminLoggedIn")) = False Then
+            Response.Redirect("../login_page.aspx")
+        End If
+
         If Not Me.IsPostBack Then
             PopulateDateDropdown()
         End If
+
     End Sub
 
     Protected Sub SubmitButton_Click(sender As Object, e As EventArgs) Handles btnSubmit.Click
@@ -32,6 +37,7 @@ Partial Class add_bus
                 ' Insertion successful, 
                 lblErrorMessage.Visible = False
                 ClientScript.RegisterStartupScript(Me.GetType(), "alert", "alert('Bus added successfully.');", True)
+                emptyInputFields()
             Catch ex As Exception
                 ' Error occurred while inserting data
                 lblErrorMessage.Text = "An error occurred while processing your request. Please try again later."
@@ -41,7 +47,6 @@ Partial Class add_bus
     End Sub
 
     Private Function validateInputs() As Boolean
-        ' Validate all input fields
         If String.IsNullOrEmpty(busNumber.Text) OrElse
            String.IsNullOrEmpty(departureLocation.Text) OrElse
            String.IsNullOrEmpty(arrivalLocation.Text) OrElse
@@ -55,7 +60,6 @@ Partial Class add_bus
 
         Dim numberRegex As String = "^[A-Z]+-\d+$"
         If Not System.Text.RegularExpressions.Regex.IsMatch(busNumber.Text.Trim(), numberRegex) Then
-            ' Display error message for invalid email format
             lblErrorMessage.Text = "Bus number is not valid. Please enter a valid number"
             lblErrorMessage.Visible = True
             Return False
@@ -65,18 +69,22 @@ Partial Class add_bus
     End Function
 
     Private Sub PopulateDateDropdown()
-        ' a list to store dates for the next five days
         Dim datesList As New List(Of ListItem)()
-
-        ' Loop to add dates for the next five days to the list
         For i As Integer = 0 To 4
             Dim nextDate As DateTime = DateTime.Today.AddDays(i)
             datesList.Add(New ListItem(nextDate.ToString("dd MMMM yyyy"), nextDate.ToString("MM-dd-yyyy")))
         Next
-
-        ' Bind the list of dates to the dropdown list
         dateInput.DataSource = datesList
         dateInput.DataBind()
+    End Sub
+
+    Private Sub emptyInputFields()
+        busNumber.Text = ""
+        departureLocation.Text = ""
+        arrivalLocation.Text = ""
+        dateInput.Text = ""
+        time.Text = ""
+        seatPrice.Text = ""
     End Sub
 
 End Class

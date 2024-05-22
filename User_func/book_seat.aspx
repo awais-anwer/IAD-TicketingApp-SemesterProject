@@ -11,7 +11,7 @@
      <div class="navbar">
         <a href="book_seat.aspx">Book Seats</a>
         <a href="ShowTickets.aspx">See Tickets</a>
-        <a href="javascript:void(0);" class="right" onclick="logout()">Logout</a>
+        <a href="../Default.aspx" class="right">Logout</a>
     </div>
     <form id="ticketForm" runat="server">
         <div class="container">
@@ -31,7 +31,7 @@
             <asp:Button ID="btnSubmit" runat="server" Text="Search" CssClass="btn" />
             <asp:Label ID="lblErrorMessage" runat="server" CssClass="error-message" Visible="False"></asp:Label>
             <div class="admin-portal-link">
-                <p>Go back to <a href="admin_page.aspx">Admin Portal</a></p>
+                <p>Go back to <a href="../admin_funcs/admin_page.aspx">Admin Portal</a></p>
             </div>
         </div>
         

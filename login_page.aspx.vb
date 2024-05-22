@@ -1,4 +1,5 @@
 ﻿Imports System.Data.SqlClient
+Imports System.Security.Cryptography
 Partial Class login
     Inherits System.Web.UI.Page
 
@@ -33,7 +34,8 @@ Partial Class login
                             Dim userType As String = reader("User_Type").ToString()
 
                             ' Check if the entered password matches the stored password
-                            If password = storedPassword Then
+                            Dim hashedPassword As String = HashPassword(password)
+                            If storedPassword = hashedPassword Then
                                 ' Check user type and redirect accordingly
                                 If userType = "admin" Then
                                     ' Redirect to admin page
@@ -42,7 +44,9 @@ Partial Class login
                                 ElseIf userType = "passenger" Then
                                     ' Redirect to user page
                                     Session("passengerLoggedIn") = True
-                                    'Response.Redirect("user_page.aspx")
+                                    Session("passengerEmail") = storedEmail
+                                    Session("passengerName") = name
+                                    Response.Redirect("User_func/book_seat.aspx")
                                 End If
                             Else
                                 ' Invalid password
@@ -54,7 +58,6 @@ Partial Class login
                             lblErrorMessage.Text = "Invalid username or password"
                             lblErrorMessage.Visible = True
                         End If
-
                         reader.Close()
                     End Using
                 End Using
@@ -90,6 +93,18 @@ Partial Class login
 
         ' All inputs are valid
         Return True
+    End Function
+
+    Public Function HashPassword(password As String) As String
+        Using sha256 As SHA256 = sha256.Create()
+            Dim bytes As Byte() = Encoding.UTF8.GetBytes(password)
+            Dim hash As Byte() = sha256.ComputeHash(bytes)
+            Dim builder As New StringBuilder()
+            For Each b As Byte In hash
+                builder.Append(b.ToString("x2"))
+            Next
+            Return builder.ToString()
+        End Using
     End Function
 
 End Class

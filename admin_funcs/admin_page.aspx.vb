@@ -3,15 +3,13 @@ Partial Class admin_page
     Inherits System.Web.UI.Page
 
     Private Sub admin_page_Load(sender As Object, e As EventArgs) Handles Me.Load
-        '' Check if admin is logged in
-        'If Session("adminLoggedIn") Is Nothing OrElse CBool(Session("adminLoggedIn")) = False Then
-        '    Response.Redirect("login_page.aspx")
-        'End If
+        If Session("adminLoggedIn") Is Nothing OrElse CBool(Session("adminLoggedIn")) = False Then
+            Response.Redirect("../login_page.aspx")
+        End If
     End Sub
 
     Private Sub btnLogout_Click(sender As Object, e As EventArgs) Handles btnLogout.Click
-        Session.Clear()
-        Response.Redirect("../login_page.aspx")
+        Response.Redirect("../Default.aspx")
     End Sub
 
     Private Sub btnAddBus_Click(sender As Object, e As EventArgs) Handles btnAddBus.Click

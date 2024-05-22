@@ -5,19 +5,22 @@ Partial Class update_singleBus
     Dim ConnectionString As String = ConfigurationManager.ConnectionStrings("conn_string").ConnectionString
 
     Private Sub update_singleBus_Load(sender As Object, e As EventArgs) Handles Me.Load
+        If Session("adminLoggedIn") Is Nothing OrElse CBool(Session("adminLoggedIn")) = False Then
+            Response.Redirect("../login_page.aspx")
+        End If
+
         If Not IsPostBack Then
             Dim oldBusNumber As String = Request.QueryString("BusNumber")
+            Dim BusId As String = Request.QueryString("BusId")
+
             Dim old_bus_date As String = Request.QueryString("Date")
             Dim oldTime As String = Request.QueryString("Time")
             Dim oldDepartureLocation As String = Request.QueryString("DepartureLocation")
             Dim oldArrivalLocation As String = Request.QueryString("ArrivalLocation")
             Dim busPrice As Int32 = Request.QueryString("SeatPrice")
 
-            'Dim parsedDate As DateTime
-            ' Populate fields with retrieved values
             busNumber.Text = oldBusNumber
-            'DateTime.TryParse(old_bus_date, parsedDate)
-            'dateInput.Text = parsedDate.ToString("yyyy-MM-dd")
+
             PopulateDateDropdown(old_bus_date)
             time.Text = oldTime
             departureLocation.Text = oldDepartureLocation
@@ -28,15 +31,13 @@ Partial Class update_singleBus
     End Sub
 
     Protected Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnSubmit.Click
-
-        ' Retrieve the original values from the query string
+        Dim BusId As String = Request.QueryString("BusId")
         Dim originalDate As String = Request.QueryString("Date")
         Dim originalTime As String = Request.QueryString("Time")
         Dim originalDepartureLocation As String = Request.QueryString("DepartureLocation")
         Dim originalArrivalLocation As String = Request.QueryString("ArrivalLocation")
         Dim originalPrice As Int32 = Convert.ToInt32(Request.QueryString("SeatPrice"))
 
-        ' Retrieve the new values from the form
         If validateInputs() Then
             Dim newDate As String = dateInput.SelectedValue
             Dim newTime As String = time.Text
@@ -44,13 +45,10 @@ Partial Class update_singleBus
             Dim newArrivalLocation As String = arrivalLocation.Text
             Dim newPrice As Int32 = Convert.ToInt32(seatPrice.Text)
 
-            ' Check if any values have changed
             If newDate <> originalDate OrElse newTime <> originalTime OrElse newDepartureLocation <> originalDepartureLocation OrElse newArrivalLocation <> originalArrivalLocation OrElse newPrice <> originalPrice Then
 
-                ' Update the data in the database
-                Dim isDone = UpdateBusData(busNumber.Text, newDate, newTime, newDepartureLocation, newArrivalLocation, newPrice)
+                Dim isDone = UpdateBusData(BusId, busNumber.Text, newDate, newTime, newDepartureLocation, newArrivalLocation, newPrice)
 
-                ' Redirect
                 If isDone Then
                     Response.Redirect("update_bus.aspx")
                 Else
@@ -59,16 +57,15 @@ Partial Class update_singleBus
                 End If
 
             Else
-                ' No changes were made
                 Response.Redirect("update_bus.aspx")
             End If
         End If
 
     End Sub
 
-    Private Function UpdateBusData(busNumber As String, new_date As String, new_time As String, departureLocation As String, arrivalLocation As String, price As Int32) As Boolean
+    Private Function UpdateBusData(busId As String, busNumber As String, new_date As String, new_time As String, departureLocation As String, arrivalLocation As String, price As Int32) As Boolean
         Dim isDone As Boolean
-        Dim query As String = "UPDATE Bus SET Date_time = @Date_time, Departure_location = @DepartureLocation, Arrival_location = @ArrivalLocation, Seat_price = @Price WHERE Bus_number = @BusNumber"
+        Dim query As String = "UPDATE Bus SET Date_time = @Date_time, Departure_location = @DepartureLocation, Arrival_location = @ArrivalLocation, Seat_price = @Price WHERE Bus_id = @BusId"
         Try
             Using connection As New SqlConnection(ConnectionString)
                 Using command As New SqlCommand(query, connection)
@@ -76,7 +73,7 @@ Partial Class update_singleBus
                     command.Parameters.AddWithValue("@DepartureLocation", departureLocation)
                     command.Parameters.AddWithValue("@ArrivalLocation", arrivalLocation)
                     command.Parameters.AddWithValue("@Price", price)
-                    command.Parameters.AddWithValue("@BusNumber", busNumber)
+                    command.Parameters.AddWithValue("@BusId", busId)
 
                     connection.Open()
                     command.ExecuteNonQuery()
@@ -93,7 +90,6 @@ Partial Class update_singleBus
 
     Private Function validateInputs() As Boolean
 
-        ' Validate all input fields
         If String.IsNullOrEmpty(busNumber.Text) OrElse
            String.IsNullOrEmpty(departureLocation.Text) OrElse
            String.IsNullOrEmpty(arrivalLocation.Text) OrElse
@@ -109,20 +105,16 @@ Partial Class update_singleBus
     End Function
 
     Private Sub PopulateDateDropdown(old_date As String)
-        ' a list to store dates for the next five days
         Dim datesList As New List(Of ListItem)()
 
-        ' Loop to add dates for the next five days to the list
         For i As Integer = 0 To 4
             Dim nextDate As DateTime = DateTime.Today.AddDays(i)
             datesList.Add(New ListItem(nextDate.ToString("dd MMMM yyyy"), nextDate.ToString("MM-dd-yyyy")))
         Next
 
-        ' Bind the list of dates to the dropdown list
         dateInput.DataSource = datesList
         dateInput.DataBind()
 
-        ' Find and select the item that matches old_date
         Dim selectedItem As ListItem = dateInput.Items.FindByValue(old_date)
         If selectedItem IsNot Nothing Then
             dateInput.ClearSelection()

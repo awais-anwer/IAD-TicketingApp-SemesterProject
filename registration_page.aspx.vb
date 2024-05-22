@@ -1,4 +1,5 @@
 ﻿Imports System.Data.SqlClient
+Imports System.Security.Cryptography
 Partial Class registration_page
     Inherits System.Web.UI.Page
 
@@ -31,19 +32,23 @@ Partial Class registration_page
                         Dim query As String = "INSERT INTO App_User (Name, Email, Password, User_type)" &
                         "VALUES (@Name, @Email, @Password, @User_type)"
 
+                        Dim hashedPassword As String = HashPassword(txtPassword.Text)
+
                         Using command As New SqlCommand(query, Connection)
                             ' Add parameters to the command
                             command.Parameters.AddWithValue("@Name", txtFullName.Text)
                             command.Parameters.AddWithValue("@Email", txtEmail.Text)
-                            command.Parameters.AddWithValue("@Password", txtPassword.Text)
+                            command.Parameters.AddWithValue("@Password", hashedPassword)
                             command.Parameters.AddWithValue("@User_type", "passenger")
 
                             command.ExecuteNonQuery()
 
-                            ' Show success message
+
                             lblErrorMessage.Visible = False ' Hide any previous error message
-                            Session("userLoggedIn") = True
-                            'Response.Redirect("user_page.aspx")
+                            Session("passengerLoggedIn") = True
+                            Session("passengerEmail") = txtEmail.Text
+                            Session("passengerName") = txtFullName.Text
+                            Response.Redirect("User_func/book_seat.aspx")
                         End Using
                     End Using
                 End If
@@ -101,6 +106,19 @@ Partial Class registration_page
 
         ' All inputs are valid
         Return True
+    End Function
+
+
+    Public Function HashPassword(password As String) As String
+        Using sha256 As SHA256 = sha256.Create()
+            Dim bytes As Byte() = Encoding.UTF8.GetBytes(password)
+            Dim hash As Byte() = sha256.ComputeHash(bytes)
+            Dim builder As New StringBuilder()
+            For Each b As Byte In hash
+                builder.Append(b.ToString("x2"))
+            Next
+            Return builder.ToString()
+        End Using
     End Function
 
 End Class
